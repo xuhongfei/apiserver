@@ -3,14 +3,32 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"apiserver/router"
-	"log"
 	"net/http"
 	"time"
 	"errors"
+	"github.com/spf13/pflag"
+	"apiserver/config"
+	"github.com/spf13/viper"
+	"github.com/lexkong/log"
+)
+
+var (
+	cfg = pflag.StringP("config", "c", "", "apiserver config file path.")
 )
 
 func main() {
 
+	pflag.Parse()
+
+	//init flag
+	if err := config.Init(*cfg); err != nil {
+		panic(err)
+	}
+
+	// set gin mode
+	gin.SetMode(viper.GetString("runmode"))
+
+	// Create the gin engine
 	g := gin.New()
 
 	middlewares := []gin.HandlerFunc{}
@@ -24,23 +42,23 @@ func main() {
 		if err := pingServer(); err != nil {
 			log.Fatal("The router has no response, or it might took too long to start up.", err)
 		}
-		log.Print("The router has been deployed successfully.")
+		log.Info("The router has been deployed successfully.")
 	}()
 
-	log.Printf("Start to listening the incoming requests on http address: %s", ":8080")
-	log.Printf(http.ListenAndServe(":8080", g).Error())
+	log.Infof("Start to listening the incoming requests on http address: %s", viper.GetString("addr"))
+	log.Info(http.ListenAndServe(viper.GetString("addr"), g).Error())
 
 }
 
 
 func pingServer() error {
-	for i := 0; i < 10; i++ {
-		resp, err := http.Get("http://127.0.0.1:8080" + "/sd/health")
+	for i := 0; i < viper.GetInt("max_ping_count"); i++ {
+		resp, err := http.Get(viper.GetString("url") + "/sd/health")
 		if err == nil && resp.StatusCode == 200 {
 			return nil
 		}
 
-		log.Print("Waiting for thw router, retry in 1 second.")
+		log.Info("Waiting for thw router, retry in 1 second.")
 		time.Sleep(time.Second)
 	}
 	return errors.New("Cannot connect to the router.")
