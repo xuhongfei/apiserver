@@ -5,6 +5,7 @@ import (
 	"apiserver/router/middleware"
 	"net/http"
 	"apiserver/handler/sd"
+	"apiserver/handler/user"
 )
 
 func Load(g *gin.Engine, mw ...gin.HandlerFunc) *gin.Engine {
@@ -15,10 +16,17 @@ func Load(g *gin.Engine, mw ...gin.HandlerFunc) *gin.Engine {
 	g.Use(middleware.Secure)
 	g.Use(mw...)
 
+	// 404 handle
 	g.NoRoute(func(c *gin.Context) {
 		c.String(http.StatusNotFound, "The incorrect API route.")
 	})
 
+	u := g.Group("/v1/user")
+	{
+		u.POST("", user.Create)
+	}
+
+	// the health check handlers
 	svcd := g.Group("/sd")
 	{
 		svcd.GET("/health", sd.HealthCheck)

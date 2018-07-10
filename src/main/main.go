@@ -10,6 +10,7 @@ import (
 	"apiserver/config"
 	"github.com/spf13/viper"
 	"github.com/lexkong/log"
+	"apiserver/model"
 )
 
 var (
@@ -27,6 +28,10 @@ func main() {
 
 	// set gin mode
 	gin.SetMode(viper.GetString("runmode"))
+
+	// init db
+	model.DB.Init()
+	defer model.DB.Close()
 
 	// Create the gin engine
 	g := gin.New()
