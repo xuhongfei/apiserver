@@ -250,3 +250,10 @@
 {"level":"DEBUG","timestamp":"2018-07-10 21:53:19.704","file":"user/create.go:24","msg":"username is: [], password is [admin]"}
 {"level":"ERROR","timestamp":"2018-07-10 21:53:19.704","file":"user/create.go:27","msg":"Get an error","data":{"error":"Err - code: 20102, message: The user was not found. This is add messages., error: username can not found in db: xx:xx:xx:xx"}}
 {"level":"DEBUG","timestamp":"2018-07-10 21:53:19.704","file":"user/create.go:31","msg":"err type is ErrUserNotFound"}
+{"level":"INFO","timestamp":"2018-07-11 11:22:25.906","file":"main/main.go:53","msg":"Start to listening the incoming requests on http address: :6663"}
+{"level":"INFO","timestamp":"2018-07-11 11:22:25.906","file":"main/main.go:66","msg":"Waiting for thw router, retry in 1 second."}
+{"level":"INFO","timestamp":"2018-07-11 11:22:26.912","file":"main/main.go:50","msg":"The router has been deployed successfully."}
+{"level":"INFO","timestamp":"2018-07-11 11:23:21.009","file":"user/create.go:22","msg":"URL username: admin2"}
+{"level":"INFO","timestamp":"2018-07-11 11:23:21.009","file":"user/create.go:25","msg":"URL key param desc: test"}
+{"level":"INFO","timestamp":"2018-07-11 11:23:21.009","file":"user/create.go:28","msg":"Header Content-Type: application/json"}
+{"level":"DEBUG","timestamp":"2018-07-11 11:23:21.009","file":"user/create.go:30","msg":"username is: [admin], password is [admin]"}
