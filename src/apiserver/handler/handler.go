@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"apiserver/errno"
+	"apiserver/pkg/errno"
 	"net/http"
 )
 

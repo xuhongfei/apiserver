@@ -2,40 +2,50 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	. "apiserver/handler"
-	"apiserver/errno"
+	"apiserver/pkg/errno"
 	"github.com/lexkong/log"
-	"fmt"
+	"github.com/lexkong/log/lager"
+	"apiserver/util"
+	"apiserver/handler"
+	"apiserver/model"
 )
 
 // create creates a new user account
 func Create(c *gin.Context) {
 
+	log.Info("User Create function called.", lager.Data{"X-Request-Id": util.GetReqID(c)})
+
 	var r CreateRequest
 
 	if err := c.Bind(&r); err != nil {
-		SendResponse(c, errno.ErrBind, nil)
+		handler.SendResponse(c, errno.ErrBind, nil)
 		return
 	}
 
-	admin2 := c.Param("username")
-	log.Infof("URL username: %s", admin2)
+	u := model.UserModel{
+		Username: r.Username,
+		Password: r.Password,
+	}
 
-	desc := c.Query("desc")
-	log.Infof("URL key param desc: %s", desc)
-
-	contentType := c.GetHeader("Content-Type")
-	log.Infof("Header Content-Type: %s", contentType)
-
-	log.Debugf("username is: [%s], password is [%s]", r.Username, r.Password)
-
-	if r.Username == "" {
-		SendResponse(c, errno.New(errno.ErrUserNotFound, fmt.Errorf("username can not found in db: xx:xx:xx:xx")), nil)
+	if err := u.Validate(); err != nil {
+		handler.SendResponse(c, errno.ErrValidation, nil)
 		return
 	}
 
-	if r.Password == "" {
-		SendResponse(c, fmt.Errorf("password is empty"), nil)
+	if err := r.checkParam(); err != nil {
+		handler.SendResponse(c, err, nil)
+		return
+	}
+
+	//对密码加密
+	if err := u.Encrypt(); err != nil {
+		handler.SendResponse(c, errno.ErrEncrypt, nil)
+		return
+	}
+
+	//向数据库添加记录
+	if err := u.Create(); err != nil {
+		handler.SendResponse(c, errno.ErrDatabase, nil)
 		return
 	}
 
@@ -43,33 +53,17 @@ func Create(c *gin.Context) {
 		Username: r.Username,
 	}
 
-	SendResponse(c, nil, rsp)
+	handler.SendResponse(c, nil, rsp)
+}
 
-	//var r struct {
-	//	Username string `json:"username"`
-	//	Password string `json:"password"`
-	//}
-	//
-	//var err error
-	//if err := c.Bind(&r); err != nil {
-	//	c.JSON(http.StatusOK, gin.H{"error": errno.ErrBind})
-	//	return
-	//}
-	//
-	//log.Debugf("username is: [%s], password is [%s]", r.Username, r.Password)
-	//if r.Username == "" {
-	//	err = errno.New(errno.ErrUserNotFound, fmt.Errorf("username can not found in db: xx:xx:xx:xx")).Add("This is add messages.")
-	//	log.Errorf(err, "Get an error")
-	//}
-	//
-	//if errno.IsErrUserNotFound(err) {
-	//	log.Debug("err type is ErrUserNotFound")
-	//}
-	//
-	//if r.Password == "" {
-	//	err = fmt.Errorf("password is empty")
-	//}
-	//
-	//code, message := errno.DecodeErr(err)
-	//c.JSON(http.StatusOK, gin.H{"code": code, "message": message})
+func (r *CreateRequest) checkParam() error {
+	if r.Username == "" {
+		return errno.New(errno.ErrValidation, nil).Add("username is empty.")
+	}
+
+	if r.Password == "" {
+		return errno.New(errno.ErrValidation, nil).Add("password is empty.")
+	}
+
+	return nil
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/lexkong/log"
 	"apiserver/model"
+	"apiserver/router/middleware"
 )
 
 var (
@@ -36,11 +37,13 @@ func main() {
 	// Create the gin engine
 	g := gin.New()
 
-	middlewares := []gin.HandlerFunc{}
+	//middlewares := []gin.HandlerFunc{}
 
 	router.Load(
 		g,
-		middlewares...,
+		middleware.RequestId(),
+		middleware.Logging(),
+		//middlewares...,
 	)
 
 	go func() {
